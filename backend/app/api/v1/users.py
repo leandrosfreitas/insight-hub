@@ -8,7 +8,6 @@ from app.repositories.user import create_user, get_user_by_id, list_users
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
-
 @router.post(
     "",
     response_model=UserResponse,
@@ -18,14 +17,12 @@ def create(user: UserCreate, db: Session = Depends(get_db)):
     return create_user(db, user)
 
 
-
 @router.get(
     "",
     response_model=list[UserResponse]
 )
 def get_all(db: Session = Depends(get_db)):
     return list_users(db)
-
 
 
 @router.get(
