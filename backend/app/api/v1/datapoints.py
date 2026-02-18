@@ -30,7 +30,7 @@ def create(datapoint: DataPointCreate, db: Session = Depends(get_db)):
 
 
 @router.get(
-    "/indicators/{indicators_id}/datapoints",
+    "/indicators/{indicator_id}/datapoints",
     response_model=list[DataPointResponse]
 )
 def list_by_indicator(indicator_id: int, db: Session = Depends(get_db)):

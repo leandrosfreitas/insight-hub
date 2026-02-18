@@ -2,7 +2,7 @@ from datetime import date
 import requests
 
 
-class BCBCliente:
+class BCBClient:
     BASE_URL = "https://api.bcb.gov.br/dados/serie"
 
     @staticmethod
@@ -11,7 +11,7 @@ class BCBCliente:
         data_inicial: date,
         data_final: date,
     ) -> list[dict]:
-        url = f"{BCBCliente.BASE_URL}/bcdata.sgs.{serie_id}/dados"
+        url = f"{BCBClient.BASE_URL}/bcdata.sgs.{serie_id}/dados"
 
         params = {
             "formato": "json",
