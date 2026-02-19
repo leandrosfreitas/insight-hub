@@ -1,11 +1,13 @@
 from fastapi import FastAPI
 
 from app.core.config import settings
+
 from app.api.v1.health import router as health_router
 from app.api.v1.users import router as users_router
 from app.api.v1.indicators import router as indicators_router
 from app.api.v1.datapoints import router as datapoints_router
 from app.api.v1.indicators_sync import router as indicators_sync_router
+from app.api.v1.auth import router as auth_router
 
 from app.middlewares.request_id import RequestIDMiddleware
 from app.middlewares.logging import LoggingMiddleware
@@ -32,3 +34,4 @@ app.include_router(users_router, prefix="/api/v1")
 app.include_router(indicators_router, prefix="/api/v1")
 app.include_router(datapoints_router, prefix="/api/v1")
 app.include_router(indicators_sync_router, prefix="/api/v1")
+app.include_router(auth_router, prefix="/api/v1")

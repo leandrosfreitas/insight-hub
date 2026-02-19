@@ -1,7 +1,7 @@
 from datetime import datetime, date
 from sqlalchemy.orm import Session
 
-from app.clients.bcb_client import BCBCliente
+from app.clients.bcb_client import BCBClient
 from app.db.models import Indicator
 
 
@@ -13,7 +13,7 @@ def sync_indicator_from_bcb(
     start_date: date,
     end_date: date,
 ) -> int:
-    dados = BCBCliente.buscar_serie(
+    dados = BCBClient.buscar_serie(
         serie_id=series_id,
         data_inicial=start_date,
         data_final=end_date,
