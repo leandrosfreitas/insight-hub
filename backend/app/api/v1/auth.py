@@ -1,36 +1,39 @@
 from fastapi import APIRouter, status, Depends, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.schemas.auth import LoginRequest, TokenResponse
 from app.repositories.user import get_user_by_email
-from app.core.security import verify_password, create_access_token
+from app.core.security import verify_password, create_access_token, create_refresh_token
+from app.db.models.user import User
+from app.api.deps import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
-@router.post(
-    "/login",
-    response_model=TokenResponse,
-    status_code=status.HTTP_200_OK
-)
-def login(payload: LoginRequest, db: Session = Depends(get_db)):
-    user = get_user_by_email(db, payload.email)
+@router.post("/login")
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = get_user_by_email(db, form_data.username)
 
-    if not user:
+    if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials"
+            detail="Incorrect email or password"
         )
     
-    if not verify_password(payload.password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials"
-        )
-    
-    token = create_access_token(subject=str(user.id))
+    access_token = create_access_token(str(user.id))
+    refresh_token = create_refresh_token(str(user.id))
     
     return {
-        "access_token": token,
+        "access_token": access_token,
+        "refresh_token": refresh_token,
         "token_type": "bearer"
+    }
+
+@router.get("/me")
+def get_me(current_user: User = Depends(get_current_user)):
+    return {
+        "id": current_user.id,
+        "name": current_user.name,
+        "email": current_user.email
     }
