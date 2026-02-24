@@ -30,7 +30,7 @@ def decode_token(token: str) -> dict:
             algorithms=[settings.ALGORITHM],
         )
     except JWTError:
-        raise
+        return None
     
 def create_refresh_token(subject: str) -> str:
     expire = datetime.now(timezone.utc) + timedelta(

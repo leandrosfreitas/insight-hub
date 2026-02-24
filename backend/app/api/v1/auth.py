@@ -1,10 +1,11 @@
 from fastapi import APIRouter, status, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.repositories.user import get_user_by_email
-from app.core.security import verify_password, create_access_token, create_refresh_token
+from app.core.security import verify_password, create_access_token, create_refresh_token, decode_token
 from app.db.models.user import User
 from app.api.deps import get_current_user
 
@@ -26,6 +27,26 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
+        "token_type": "bearer"
+    }
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
+@router.post("/refresh")
+def refresh_token(data: RefreshTokenRequest):
+    payload = decode_token(data.refresh_token)
+
+    if payload is None or payload.get("type") != "refresh":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid refresh token"
+        )
+    
+    new_access_token = create_access_token(payload["sub"])
+
+    return {
+        "access_token": new_access_token,
         "token_type": "bearer"
     }
 

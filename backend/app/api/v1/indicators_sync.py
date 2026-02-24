@@ -7,6 +7,7 @@ from app.db.models import Indicator
 from app.services.bcb_service import sync_indicator_from_bcb
 
 from app.api.deps import get_current_user
+from app.db.models.user import User
 
 router = APIRouter(
     prefix="/indicators",
@@ -18,7 +19,7 @@ router = APIRouter(
 def sync_indicator(
     indicator_id: int,
     series_id: int,
-    user=Depends(get_current_user),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     indicator = db.get(Indicator, indicator_id)

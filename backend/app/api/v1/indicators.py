@@ -5,6 +5,9 @@ from app.db.session import get_db
 from app.schemas.indicator import IndicatorCreate, IndicatorResponse
 from app.repositories.indicator import create_indicator, get_indicator_by_id, list_indicators
 
+from app.api.deps import get_current_user
+from app.db.models.user import User
+
 router = APIRouter(
     prefix="/indicators",
     tags=["Indicatores"]
@@ -16,7 +19,11 @@ router = APIRouter(
     response_model=IndicatorResponse,
     status_code=status.HTTP_201_CREATED
 )
-def create(indicator: IndicatorCreate, db: Session = Depends(get_db)):
+def create(
+    indicator: IndicatorCreate,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
     return create_indicator(db,indicator)
 
 
@@ -24,7 +31,10 @@ def create(indicator: IndicatorCreate, db: Session = Depends(get_db)):
     "",
     response_model=list[IndicatorResponse]
 )
-def get_all(db: Session = Depends(get_db)):
+def get_all(
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
     return list_indicators(db)
 
 
@@ -32,7 +42,11 @@ def get_all(db: Session = Depends(get_db)):
     "/{indicator_id}",
     response_model=IndicatorResponse
 )
-def get_by_id(indicator_id: int, db: Session = Depends(get_db)):
+def get_by_id(
+    indicator_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
     indicator = get_indicator_by_id(db, indicator_id)
 
     if not indicator:
