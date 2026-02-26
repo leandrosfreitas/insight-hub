@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 class IndicatorBase(BaseModel):
     name: str
@@ -11,5 +11,4 @@ class IndicatorCreate(IndicatorBase):
 class IndicatorResponse(IndicatorBase):
     id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

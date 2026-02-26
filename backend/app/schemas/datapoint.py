@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import date
 
 class DataPointBase(BaseModel):
@@ -12,5 +12,4 @@ class DataPointResponse(DataPointBase):
     id: int
     indicator_id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
