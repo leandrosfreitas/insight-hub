@@ -16,6 +16,9 @@ from app.middlewares.exception_handler import global_exception_handler
 
 from app.core.logging import setup_logging
 
+from app.db.base import Base
+from app.db.session import engine
+
 app = FastAPI(
     title=settings.app_name,
     version=settings.api_version,
@@ -44,3 +47,7 @@ app.include_router(indicators_router, prefix="/api/v1")
 app.include_router(datapoints_router, prefix="/api/v1")
 app.include_router(indicators_sync_router, prefix="/api/v1")
 app.include_router(auth_router, prefix="/api/v1")
+
+@app.on_event("startup")
+def on_startup():
+    Base.metadata.create_all(bind=engine)

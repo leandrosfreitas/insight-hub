@@ -7,6 +7,8 @@ ENV POETRY_NO_INTERACTION=1 \
 
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y gcc libpq-dev
+
 # Instala o poetry
 RUN pip install poetry
 

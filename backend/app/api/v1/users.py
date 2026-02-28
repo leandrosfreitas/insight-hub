@@ -19,7 +19,7 @@ router = APIRouter(prefix="/users", tags=["Users"])
 def create(
     user: UserCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    #current_user: User = Depends(get_current_user)
 ):
     return create_user(db, user)
 
