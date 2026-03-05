@@ -1,96 +1,119 @@
-import { useEffect, useState } from "react";
-import { api } from "../services/api";
-import { useAuth } from "../context/AuthContext";
+import { useEffect, useState } from "react"
+import { api } from "../services/api"
+import { Layout } from "../components/layout/Layout"
+
 import {
-    LineChart,
-    Line,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer
-} from "recharts";
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  ResponsiveContainer
+} from "recharts"
 
 interface Indicator {
-    id: number;
-    name: string;
-    source: string;
+  id: number
+  name: string
 }
 
 interface DataPoint {
-    date: string | number | Date;
-    id: number;
-    name: string;
-    source: string;
+  date: string
+  value: number
 }
 
 export const Dashboard = () => {
-    const [indicators, setIndicators] = useState<Indicator[]>([]);
-    const [selectedIndicator, setSelectedIndicator] = useState<number | null>(null);
-    const [dataPoints, setDataPoints] = useState<DataPoint[]>([])
-    const { logout } = useAuth();
 
-    useEffect(() => {
-        api.get("/indicators")
-            .then(res => setIndicators(res.data))
-            .catch(() => alert("Erro ao carregar indicadores"));
-    }, []);
+  const [indicators,setIndicators] = useState<Indicator[]>([])
+  const [selectedIndicator,setSelectedIndicator] = useState<number | null>(null)
+  const [dataPoints,setDataPoints] = useState<DataPoint[]>([])
 
-    useEffect(() => {
-        if (selectedIndicator) {
-            api.get(`/indicators/${selectedIndicator}/datapoints`)
-                .then(res => {
-                    const formatted = res.data.map((item: DataPoint) => ({
-                        ...item,
-                        date: new Date(item.date).toLocaleDateString()
-                    }));
-                    setDataPoints(formatted);
-                })
-                .catch(() => alert("Erro ao carregar dados"));
-        }
-    }, [selectedIndicator]);
+  useEffect(()=>{
+    api.get("/indicators")
+      .then(res=>setIndicators(res.data))
+  },[])
 
-    return (
-        <div style={{ padding: 40 }}>
-            <h2>InsightHub Dashboard</h2>
-            <button onClick={logout}>Logout</button>
+  useEffect(()=>{
+    if(selectedIndicator){
+      api.get(`/indicators/${selectedIndicator}/datapoints`)
+      .then(res=>{
+        const formatted = res.data.map((d:DataPoint)=>({
+          ...d,
+          date:new Date(d.date).toLocaleDateString()
+        }))
+        setDataPoints(formatted)
+      })
+    }
+  },[selectedIndicator])
 
-            <h3>Selecionar Indicador</h3>
+  return (
 
-            <select
-                onChange={(e) => setSelectedIndicator(Number(e.target.value))}
-                defaultValue=""
-            >
-                <option value="" disabled>
-                    Escolha um indicador
-                </option>
-                {indicators.map(ind => (
-                    <option key={ind.id} value={ind.id}>
-                        {ind.name}
-                    </option>
-                ))}
-            </select>
+    <Layout>
 
-            {dataPoints.length > 0 && (
-                <>
-                    <h3 style={{ marginTop: 40 }}>Evolução Temporal</h3>
+      <div className="max-w-6xl mx-auto">
 
-                    <ResponsiveContainer width="100%" height={400}>
-                        <LineChart data={dataPoints}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="date" />
-                            <YAxis />
-                            <Tooltip />
-                            <Line
-                                type="monotone"
-                                dataKey="value"
-                                stroke="#2563eb"
-                                dot={false}
-                            />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </>
-            )}
+        <h1 className="text-2xl font-semibold mb-6">
+          Dashboard
+        </h1>
+
+        <div className="bg-white p-6 rounded-lg shadow-sm border mb-8">
+
+          <label className="block text-sm mb-2">
+            Escolha um indicador
+          </label>
+
+          <select
+            className="border rounded px-3 py-2 w-64"
+            onChange={(e)=>setSelectedIndicator(Number(e.target.value))}
+          >
+
+            <option>Selecionar</option>
+
+            {indicators.map(ind=>(
+              <option key={ind.id} value={ind.id}>
+                {ind.name}
+              </option>
+            ))}
+
+          </select>
+
         </div>
-    );
-};
+
+        {dataPoints.length > 0 && (
+
+          <div className="bg-white p-6 rounded-lg shadow-sm border">
+
+            <h2 className="mb-4 font-medium">
+              Evolução do indicador
+            </h2>
+
+            <ResponsiveContainer width="100%" height={400}>
+
+              <LineChart data={dataPoints}>
+                <CartesianGrid strokeDasharray="3 3"/>
+                <XAxis dataKey="date"/>
+                <YAxis/>
+                <Tooltip/>
+
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#2563eb"
+                  strokeWidth={2}
+                  dot={false}
+                />
+
+              </LineChart>
+
+            </ResponsiveContainer>
+
+          </div>
+
+        )}
+
+      </div>
+
+    </Layout>
+
+  )
+}
