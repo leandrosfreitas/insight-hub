@@ -9,6 +9,7 @@ class Indicator(Base):
     name: Mapped[str] = mapped_column(String(100))
     description: Mapped[str] = mapped_column(Text)
     source: Mapped[str] = mapped_column(String(100))
+    series_code: Mapped[str] = mapped_column(String(20))
 
     datapoints = relationship(
         "DataPoint",

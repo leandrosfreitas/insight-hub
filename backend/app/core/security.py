@@ -18,8 +18,9 @@ def create_access_token(subject: str) -> str:
     payload = {
         "sub": subject,
         "exp": expire,
-        "type": "access"
-,    }
+        "type": "access",
+    }
+
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 def decode_token(token: str) -> dict:

@@ -1,4 +1,3 @@
-
 services:
   db:
     image: postgres:16
@@ -8,6 +7,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 123456
       POSTGRES_DB: insighthub_db
+    ports:
+      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -34,6 +35,19 @@ services:
       - "4173:4173"
     depends_on:
       - api
+
+  airflow:
+    image: apache/airflow:2.8.1
+    container_name: insighthub_airflow
+    command: airflow standalone
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
 
 volumes:
   postgres_data:

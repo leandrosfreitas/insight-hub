@@ -18,7 +18,6 @@ router = APIRouter(
 @router.post("/{indicator_id}/sync")
 def sync_indicator(
     indicator_id: int,
-    series_id: int,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -30,6 +29,12 @@ def sync_indicator(
             detail="Indicator not found"
         )
 
+    if not indicator.series_code:
+        raise HTTPException(
+            status_code=400,
+            detail="Indicator does not have a series_code"
+        )
+
     end_date = date.today()
     start_date = end_date - timedelta(days=365 * 2)
 
@@ -37,7 +42,6 @@ def sync_indicator(
         imported = sync_indicator_from_bcb(
             db=db,
             indicator=indicator,
-            series_id=series_id,
             start_date=start_date,
             end_date=end_date,
         )
@@ -49,6 +53,6 @@ def sync_indicator(
 
     return {
         "indicator_id": indicator.id,
-        "series_id": series_id,
+        "series_id": indicator.series_code,
         "imported_datapoints": imported,
     }

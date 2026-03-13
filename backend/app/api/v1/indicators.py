@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from datetime import date, timedelta
 
 from app.db.session import get_db
 from app.schemas.indicator import IndicatorCreate, IndicatorResponse
 from app.repositories.indicator import create_indicator, get_indicator_by_id, list_indicators
-
-from app.api.deps import get_current_user
+from app.services.bcb_service import sync_indicator_from_bcb
+from app.api.deps import get_current_user, get_current_admin
 from app.db.models.user import User
 
 router = APIRouter(
@@ -13,7 +14,7 @@ router = APIRouter(
     tags=["Indicatores"]
 )
 
-
+# POST - criar indicador + sincronizar datapoints
 @router.post(
     "",
     response_model=IndicatorResponse,
@@ -22,11 +23,33 @@ router = APIRouter(
 def create(
     indicator: IndicatorCreate,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user)
+    admin: User = Depends(get_current_admin)
 ):
-    return create_indicator(db,indicator)
 
+    new_indicator = create_indicator(db, indicator)
 
+    imported = 0
+    if new_indicator.series_code:
+        end_date = date.today()
+        start_date = end_date - timedelta(days=365 * 2)
+
+        imported = sync_indicator_from_bcb(
+            db=db,
+            indicator=new_indicator,
+            start_date=start_date,
+            end_date=end_date
+        )
+
+    return IndicatorResponse(
+        id=new_indicator.id,
+        name=new_indicator.name,
+        description=new_indicator.description,
+        source=new_indicator.source,
+        series_code=new_indicator.series_code,
+        imported_datapoints=imported
+    )
+
+# GET - listar todos os indicadores
 @router.get(
     "",
     response_model=list[IndicatorResponse]
@@ -35,9 +58,20 @@ def get_all(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
-    return list_indicators(db)
+    indicators = list_indicators(db)
+    result = []
+    for i in indicators:
+        result.append(IndicatorResponse(
+            id=i.id,
+            name=i.name,
+            description=i.description,
+            source=i.source,
+            series_code=i.series_code,
+            imported_datapoints=0
+        ))
+    return result
 
-
+# GET - buscar indicador por ID
 @router.get(
     "/{indicator_id}",
     response_model=IndicatorResponse
@@ -55,4 +89,11 @@ def get_by_id(
             detail="Indicator not found"
         )
     
-    return indicator
+    return IndicatorResponse(
+        id=indicator.id,
+        name=indicator.name,
+        description=indicator.description,
+        source=indicator.source,
+        series_code=indicator.series_code,
+        imported_datapoints=0
+    )

@@ -5,11 +5,46 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.repositories.user import get_user_by_email
-from app.core.security import verify_password, create_access_token, create_refresh_token, decode_token
+from app.core.security import (
+    verify_password,
+    create_access_token,
+    create_refresh_token,
+    decode_token,
+    hash_password
+)
 from app.db.models.user import User
 from app.api.deps import get_current_user
+from app.schemas.user import UserCreate
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
+
+@router.post("/register", status_code=201)
+def register_user(user: UserCreate, db: Session = Depends(get_db)):
+    
+    existing_user = get_user_by_email(db, user.email)
+
+    if existing_user:
+        raise HTTPException(
+            status_code=400,
+            detail="Email already registered"
+        )
+    
+    hashed_password = hash_password(user.password)
+
+    new_user = User(
+        name=user.name,
+        email=user.email,
+        hashed_password=hashed_password,
+        role="user"
+    )
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return {
+        "message": "User created successfully"
+    }
 
 @router.post("/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
@@ -27,7 +62,8 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
-        "token_type": "bearer"
+        "token_type": "bearer",
+        "role": user.role
     }
 
 class RefreshTokenRequest(BaseModel):

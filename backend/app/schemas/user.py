@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr, ConfigDict
+from app.core.roles import UserRole
 
 class UserBase(BaseModel):
     name: str
@@ -9,5 +10,6 @@ class UserCreate(UserBase):
 
 class UserResponse(UserBase):
     id: int
+    role: UserRole
 
     model_config = ConfigDict(from_attributes=True)

@@ -3,17 +3,20 @@ from app.db.models.indicator import Indicator
 from app.schemas.indicator import IndicatorCreate
 
 def create_indicator(
-      db: Session,
-      data: IndicatorCreate
+    db: Session,
+    data: IndicatorCreate
 ) -> Indicator:
+    
     indicator = Indicator(
         name=data.name,
         description=data.description,
-        source=data.source
+        source=data.source,
+        series_code=data.series_code
     )
     db.add(indicator)
     db.commit()
     db.refresh(indicator)
+    
     return indicator
 
 def list_indicators(db: Session) -> list[Indicator]:

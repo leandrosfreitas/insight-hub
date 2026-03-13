@@ -3,6 +3,7 @@ import { api } from "../services/api";
 
 interface AuthContextType {
     isAuthenticated: boolean;
+    role: string | null;
     login: (email: string, password: string) => Promise<void>;
     logout: () => void;
 }
@@ -12,6 +13,10 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(
         !!localStorage.getItem("access_token")
+    );
+
+    const [role, setRole] = useState<string | null>(
+        localStorage.getItem("role")
     );
 
     const login = async (email: string, password: string) => {
@@ -30,17 +35,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             }]
         });
 
+        const userRole = response.data.role ?? "user";
         localStorage.setItem("access_token", response.data.access_token);
+        localStorage.setItem("role", response.data.role);
         setIsAuthenticated(true);
+        setRole(userRole);
     };
 
     const logout = () => {
         localStorage.removeItem("access_token");
+        localStorage.removeItem("role");
         setIsAuthenticated(false);
+        setRole(null);
     };
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+        <AuthContext.Provider value={{ isAuthenticated, role, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

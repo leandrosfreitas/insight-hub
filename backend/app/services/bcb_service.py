@@ -7,11 +7,11 @@ from app.db.models import Indicator
 from app.schemas.datapoint import DataPointCreate
 from app.repositories.datapoint import create_datapoint, get_datapoint_by_date
 
+
 def sync_indicator_from_bcb(
     *,
     db: Session,
     indicator: Indicator,
-    series_id: int,
     start_date: date,
     end_date: date,
 ) -> int:
@@ -21,7 +21,7 @@ def sync_indicator_from_bcb(
     """
 
     dados = BCBClient.buscar_serie(
-        serie_id=series_id,
+        serie_id=indicator.series_code,
         data_inicial=start_date,
         data_final=end_date,
     )
@@ -30,13 +30,17 @@ def sync_indicator_from_bcb(
 
     for item in dados:
         try:
-            referencia = datetime.strptime(item["data"], "%d/%m/%Y").date()
-            valor = float(item["valor"])
+            referencia = datetime.strptime(
+                item["data"], "%d/%m/%Y"
+            ).date()
+
+            valor = float(
+                item["valor"].replace(",", ".")
+            )
+
         except (KeyError, ValueError):
-            # ignora registros inválidos
             continue
 
-        # 🔎 Verifica se já existe
         existente = get_datapoint_by_date(
             db=db,
             indicator_id=indicator.id,
@@ -53,6 +57,7 @@ def sync_indicator_from_bcb(
         )
 
         create_datapoint(db, novo)
+
         importados += 1
 
     return importados

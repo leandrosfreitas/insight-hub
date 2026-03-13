@@ -1,20 +1,16 @@
-import { useEffect, useState } from "react"
-import { api, getMetrics } from "../services/api"
-import MetricCard from "../components/layout/MetricCard"
-import { Layout } from "../components/layout/Layout"
-import DateFilter from "../components/layout/DateFilter"
-import ThemeToggle from "../components/layout/ThemeToggle"
-import IndicatorComparison from "../components/charts/IndicatorComparison"
+import { useEffect, useState } from "react";
+import { api, getMetrics } from "../services/api";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  ResponsiveContainer
-} from "recharts"
+import { Layout } from "../components/layout/Layout";
+import MetricCard from "../components/cards/MetricCard";
+import DateFilter from "../components/filters/DateFilter";
+import ThemeToggle from "../components/ui/ThemeToggle";
+
+import IndicatorComparison from "../components/charts/IndicatorComparison";
+import IndicatorChart from "../components/charts/IndicatorChart";
+import IndicatorAreaChart from "../components/charts/IndicatorAreaChart";
 
 interface Indicator {
   id: number
@@ -34,6 +30,9 @@ interface Metrics {
 }
 
 export const Dashboard = () => {
+  const { role } = useAuth();
+  console.log("Role atual:", role);
+  const navigate = useNavigate();
 
   const [indicators, setIndicators] = useState<Indicator[]>([])
   const [selectedIndicator, setSelectedIndicator] = useState<number | null>(null)
@@ -100,6 +99,18 @@ export const Dashboard = () => {
 
         </div>
 
+        {/* BOTÃO ADMIN */}
+
+        {role === "admin" && (
+          <div className="mb-6">
+            <button
+              onClick={() => navigate("/admin/indicators")}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+            >
+              Cadastrar indicador
+            </button>
+          </div>
+        )}
 
         {/* DATE FILTER */}
 
@@ -198,35 +209,28 @@ export const Dashboard = () => {
 
         {dataPoints.length > 0 && (
 
-          <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-sm border">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            {/* LINE CHART */}
+            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-sm border">
+              <h2 className="mb-4 font-medium">
+                Evolução do indicador
+              </h2>
 
-            <h2 className="mb-4 font-medium">
-              Evolução do indicador
-            </h2>
+              <IndicatorChart data={dataPoints} />
 
-            <ResponsiveContainer width="100%" height={400}>
+            </div>
 
-              <LineChart data={dataPoints}>
+            {/* AREA CHART */}
+            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-sm border">
+              
+              <h2 className="mb-4 font-medium">
+                Área do indicador
+              </h2>
 
-                <CartesianGrid strokeDasharray="3 3"/>
+              <IndicatorAreaChart data={dataPoints} />
 
-                <XAxis dataKey="date"/>
-
-                <YAxis/>
-
-                <Tooltip/>
-
-                <Line
-                  type="monotone"
-                  dataKey="value"
-                  stroke="#2563eb"
-                  strokeWidth={2}
-                  dot={false}
-                />
-
-              </LineChart>
-
-            </ResponsiveContainer>
+            </div>
 
           </div>
 
