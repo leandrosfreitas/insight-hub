@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { api } from "../services/api";
 
 export const Login = () => {
 
@@ -21,7 +21,7 @@ export const Login = () => {
 
             if (isRegister) {
 
-                await axios.post("/api/v1/auth/register", {
+                await api.post("/auth/register", {
                     name,
                     email,
                     password
@@ -37,8 +37,9 @@ export const Login = () => {
 
             }
 
-        } catch (error) {
-            alert("Erro ao autenticar");
+        } catch (error: any) {
+            console.error(error.response?.data || error.message);
+            alert(error.response?.data?.detail || "Erro ao auntenticar");
         }
     };
 
