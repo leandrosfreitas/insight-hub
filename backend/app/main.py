@@ -30,6 +30,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
+        "https://insight-hub-chi.vercel.app",
         "https://insighthub.vercel.app"
     ],
     allow_credentials=True,
