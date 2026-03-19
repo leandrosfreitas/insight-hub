@@ -15,7 +15,7 @@ export default function IndicatorsAdmin() {
 
     try {
       const res = await axios.post(
-        "http://localhost:8000/api/v1/indicators",
+        "/indicators",
         { name, description, source, series_code: series },
         { headers: { Authorization: `Bearer ${token}` } }
       );
