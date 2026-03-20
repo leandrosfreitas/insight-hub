@@ -19,7 +19,7 @@ export const Sidebar = ({ isOpen, setIsOpen }: any) => {
     >
 
       {/* HEADER */}
-      <div className="p-6 text-xl font-semibold flex justify-between items-center text-gray-800 dark:text-white">
+      <div className="p-6 text-xl font-semibold flex justify-between text-gray-800 dark:text-white">
         InsightHub
         <button onClick={() => setIsOpen(false)} className="md:hidden">✕</button>
       </div>
@@ -27,43 +27,25 @@ export const Sidebar = ({ isOpen, setIsOpen }: any) => {
       {/* NAV */}
       <nav className="flex-1 px-4 space-y-2">
 
-        <Link
-          to="/dashboard"
-          className="block py-2 px-3 rounded 
-          text-gray-700 dark:text-gray-200
-          hover:bg-gray-100 dark:hover:bg-gray-700"
-        >
+        <Link to="/dashboard" className="block py-2 px-3 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
           Dashboard
         </Link>
 
-        <Link
-          to="/comparison"
-          className="block py-2 px-3 rounded 
-          text-gray-700 dark:text-gray-200
-          hover:bg-gray-100 dark:hover:bg-gray-700"
-        >
-          Comparação
+        <Link to="/indicators" className="block py-2 px-3 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
+          Indicadores
         </Link>
 
-        <Link
-          to="/indicators"
-          className="block py-2 px-3 rounded 
-          text-gray-700 dark:text-gray-200
-          hover:bg-gray-100 dark:hover:bg-gray-700"
-        >
-          Indicadores
+        <Link to="/comparison" className="block py-2 px-3 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
+          Comparação
         </Link>
 
       </nav>
 
-      {/* LOGOUT FIXO */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700 mt-auto">
+      {/* LOGOUT FIXO EMBAIXO */}
+      <div className="p-4 border-t mt-auto">
         <button
           onClick={logout}
-          className="w-full py-2 rounded 
-          bg-gray-900 dark:bg-gray-700
-          text-white 
-          hover:bg-gray-800 dark:hover:bg-gray-600"
+          className="w-full py-2 bg-gray-900 text-white rounded"
         >
           Logout
         </button>

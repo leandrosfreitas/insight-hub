@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { api } from "../services/api";
 import { Layout } from "../components/layout/Layout";
-import DateFilter from "../components/filters/DateFilter";
 import IndicatorComparison from "../components/charts/IndicatorComparison";
+import DateFilter from "../components/filters/DateFilter";
+import { useFilters } from "../context/FilterContext";
 
 interface Indicator {
   id: number;
@@ -16,28 +17,23 @@ interface DataPoint {
 
 export const Comparison = () => {
 
+  const {
+    selectedIndicators,
+    setSelectedIndicators,
+    startDate,
+    setStartDate,
+    endDate,
+    setEndDate
+  } = useFilters();
+
   const [indicators, setIndicators] = useState<Indicator[]>([]);
-  const [selectedIndicators, setSelectedIndicators] = useState<number[]>([]);
   const [dataPoints, setDataPoints] = useState<Record<number, DataPoint[]>>({});
 
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-
-  // =============================
-  // LOAD INDICATORS
-  // =============================
   useEffect(() => {
-    api.get("/indicators")
-      .then(res => setIndicators(res.data))
-      .catch(err => console.error(err));
+    api.get("/indicators").then(res => setIndicators(res.data));
   }, []);
 
-  // =============================
-  // LOAD DATAPOINTS
-  // =============================
   useEffect(() => {
-
-    if (selectedIndicators.length === 0) return;
 
     selectedIndicators.forEach(id => {
 
@@ -45,11 +41,10 @@ export const Comparison = () => {
         .then(res => {
 
           let formatted: DataPoint[] = res.data.map((d: DataPoint) => ({
-            ...d,
-            date: new Date(d.date).toLocaleDateString()
+            date: new Date(d.date).toISOString(),
+            value: d.value
           }));
 
-          // filtro de período
           if (startDate && endDate) {
             formatted = formatted.filter((d: DataPoint) => {
               const current = new Date(d.date);
@@ -57,26 +52,27 @@ export const Comparison = () => {
             });
           }
 
+          formatted = formatted.map((d: DataPoint) => ({
+            ...d,
+            date: new Date(d.date).toLocaleDateString()
+          }));
+
           setDataPoints(prev => ({
             ...prev,
             [id]: formatted
           }));
 
-        })
-        .catch(err => console.error(err));
+        });
 
     });
 
   }, [selectedIndicators, startDate, endDate]);
 
-  // =============================
-  // SELECT MULTI
-  // =============================
-  const handleSelectIndicator = (id: number) => {
-    setSelectedIndicators(prev =>
-      prev.includes(id)
-        ? prev.filter(i => i !== id)
-        : [...prev, id]
+  const handleSelect = (id: number) => {
+    setSelectedIndicators(
+      selectedIndicators.includes(id)
+        ? selectedIndicators.filter((i: number) => i !== id)
+        : [...selectedIndicators, id]
     );
   };
 
@@ -85,81 +81,51 @@ export const Comparison = () => {
 
       <div className="max-w-7xl mx-auto px-4">
 
-        <h1 className="text-2xl font-semibold mb-6 dark:text-white">
-          Comparação de Indicadores
-        </h1>
+        <h1 className="text-2xl mb-6 dark:text-white">Comparação</h1>
 
-        {/* FILTRO DATA */}
-        <div className="mb-6">
-          <DateFilter
-            startDate={startDate}
-            endDate={endDate}
-            setStartDate={setStartDate}
-            setEndDate={setEndDate}
-          />
+        <DateFilter
+          startDate={startDate}
+          endDate={endDate}
+          setStartDate={setStartDate}
+          setEndDate={setEndDate}
+        />
+
+        <div className="my-6 flex flex-wrap gap-2">
+          {indicators.map(ind => (
+            <button
+              key={ind.id}
+              onClick={() => handleSelect(ind.id)}
+              className={`px-3 py-2 rounded ${
+                selectedIndicators.includes(ind.id)
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 dark:bg-gray-700"
+              }`}
+            >
+              {ind.name}
+            </button>
+          ))}
         </div>
 
-        {/* SELECT MULTI */}
-        <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-sm border mb-8">
+        <div className="grid gap-6">
 
-          <label className="block text-sm mb-3 dark:text-gray-300">
-            Escolha indicadores
-          </label>
+          {selectedIndicators.map(id => {
 
-          <div className="flex flex-wrap gap-2">
+            const data = dataPoints[id] || [];
 
-            {indicators.map(ind => (
-              <button
-                key={ind.id}
-                onClick={() => handleSelectIndicator(ind.id)}
-                className={`px-3 py-2 rounded-lg text-sm border transition ${
-                  selectedIndicators.includes(ind.id)
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 dark:bg-gray-800 dark:text-white"
-                }`}
-              >
-                {ind.name}
-              </button>
-            ))}
+            const current = data.length > 0 ? data[data.length - 1].value : 0;
+            const previous = data.length > 1 ? data[data.length - 2].value : 0;
 
-          </div>
+            return (
+              <IndicatorComparison
+                key={id}
+                title={`Indicador ${id}`}
+                current={current}
+                previous={previous}
+              />
+            );
+          })}
 
         </div>
-
-        {/* COMPARAÇÕES */}
-        {selectedIndicators.length > 0 && (
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-            {selectedIndicators.map(id => {
-
-              const indicator = indicators.find(i => i.id === id);
-              const data = dataPoints[id] || [];
-
-              const current =
-                data.length > 0
-                  ? data[data.length - 1].value
-                  : 0;
-
-              const previous =
-                data.length > 1
-                  ? data[data.length - 2].value
-                  : 0;
-
-              return (
-                <IndicatorComparison
-                  key={id}
-                  title={indicator?.name || "Indicador"}
-                  current={current}
-                  previous={previous}
-                />
-              );
-
-            })}
-
-          </div>
-
-        )}
 
       </div>
 
