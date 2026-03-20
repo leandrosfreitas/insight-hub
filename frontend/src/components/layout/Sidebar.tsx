@@ -1,9 +1,17 @@
 import { useAuth } from "../../context/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 export const Sidebar = ({ isOpen, setIsOpen }: any) => {
 
   const { logout } = useAuth();
+  const location = useLocation();
+
+  const linkClass = (path: string) =>
+    `block py-2 px-3 rounded transition ${
+      location.pathname === path
+        ? "bg-blue-600 text-white"
+        : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+    }`;
 
   return (
     <aside
@@ -27,29 +35,23 @@ export const Sidebar = ({ isOpen, setIsOpen }: any) => {
       {/* NAV */}
       <nav className="flex-1 px-4 space-y-2">
 
-        <Link
-          to="/dashboard"
-          className="block py-2 px-3 rounded 
-          text-gray-700 dark:text-gray-200
-          hover:bg-gray-100 dark:hover:bg-gray-700"
-        >
+        <Link to="/dashboard" className={linkClass("/dashboard")}>
           Dashboard
         </Link>
 
-        <Link
-          to="/indicators"
-          className="block py-2 px-3 rounded 
-          text-gray-700 dark:text-gray-200
-          hover:bg-gray-100 dark:hover:bg-gray-700"
-        >
+        <Link to="/indicators" className={linkClass("/indicators")}>
           Indicadores
+        </Link>
+
+        {/* ✅ NOVA ABA */}
+        <Link to="/comparison" className={linkClass("/comparison")}>
+          Comparação
         </Link>
 
       </nav>
 
       {/* FOOTER */}
       <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-
         <button
           onClick={logout}
           className="w-full py-2 rounded 
@@ -59,7 +61,6 @@ export const Sidebar = ({ isOpen, setIsOpen }: any) => {
         >
           Logout
         </button>
-
       </div>
 
     </aside>

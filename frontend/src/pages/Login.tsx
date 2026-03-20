@@ -9,7 +9,6 @@ export const Login = () => {
     const navigate = useNavigate();
 
     const [isRegister, setIsRegister] = useState(false);
-
     const [name, setName] = useState("")
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -20,7 +19,6 @@ export const Login = () => {
         try {
 
             if (isRegister) {
-
                 await api.post("/auth/register", {
                     name,
                     email,
@@ -31,29 +29,27 @@ export const Login = () => {
                 setIsRegister(false);
 
             } else {
-
                 await login(email, password);
                 navigate("/dashboard");
-
             }
 
         } catch (error: any) {
             console.error(error.response?.data || error.message);
-            alert(error.response?.data?.detail || "Erro ao auntenticar");
+            alert(error.response?.data?.detail || "Erro ao autenticar");
         }
     };
 
     return (
 
-        <div className="flex items-center justify-center h-screen bg-gray-100">
+        <div className="flex items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
 
-            <div className="bg-white p-10 rounded-xl shadow-md w-full max-w-md">
+            <div className="bg-white dark:bg-gray-800 p-10 rounded-xl shadow-md w-full max-w-md">
 
-                <h1 className="text-3xl font-bold text-center mb-6">
+                <h1 className="text-3xl font-bold text-center mb-6 text-gray-900 dark:text-white">
                     InsightHub
                 </h1>
 
-                <h2 className="text-xl text-center mb-6">
+                <h2 className="text-xl text-center mb-6 text-gray-700 dark:text-gray-300">
                     {isRegister ? "Criar Conta" : "Login"}
                 </h2>
 
@@ -61,7 +57,7 @@ export const Login = () => {
 
                     {isRegister && (
                         <input
-                            className="w-full border rounded-lg p-3 text-lg"
+                            className="w-full border rounded-lg p-3 text-lg bg-white dark:bg-gray-700 dark:text-white"
                             type="text"
                             placeholder="Nome"
                             value={name}
@@ -70,7 +66,7 @@ export const Login = () => {
                     )}
 
                     <input
-                        className="w-full border rounded-lg p-3 text-lg"
+                        className="w-full border rounded-lg p-3 text-lg bg-white dark:bg-gray-700 dark:text-white"
                         type="email"
                         placeholder="Email"
                         value={email}
@@ -78,7 +74,7 @@ export const Login = () => {
                     />
 
                     <input
-                        className="w-full border rounded-lg p-3 text-lg"
+                        className="w-full border rounded-lg p-3 text-lg bg-white dark:bg-gray-700 dark:text-white"
                         type="password"
                         placeholder="Senha"
                         value={password}
