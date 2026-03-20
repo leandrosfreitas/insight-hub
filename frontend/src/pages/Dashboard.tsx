@@ -102,11 +102,13 @@ export const Dashboard = () => {
 
       <div className="max-w-7xl mx-auto px-4">
 
+        {/* HEADER */}
         <div className="flex justify-between mb-6">
           <h1 className="text-2xl font-semibold dark:text-white">Dashboard</h1>
           <ThemeToggle />
         </div>
 
+        {/* ADMIN */}
         {role === "admin" && (
           <button
             onClick={() => navigate("/admin/indicators")}
@@ -116,15 +118,19 @@ export const Dashboard = () => {
           </button>
         )}
 
-        <DateFilter
-          startDate={startDate}
-          endDate={endDate}
-          setStartDate={setStartDate}
-          setEndDate={setEndDate}
-        />
+        {/* DATE FILTER (AGORA COM ESPAÇO) */}
+        <div className="mb-6">
+          <DateFilter
+            startDate={startDate}
+            endDate={endDate}
+            setStartDate={setStartDate}
+            setEndDate={setEndDate}
+          />
+        </div>
 
+        {/* METRICS */}
         {metrics && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-5 my-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-6">
             <MetricCard title="Receita" value={metrics.revenue} />
             <MetricCard title="Pedidos" value={metrics.orders} />
             <MetricCard title="Ticket" value={metrics.avg_ticket} />
@@ -132,6 +138,7 @@ export const Dashboard = () => {
           </div>
         )}
 
+        {/* SELECT MULTI (AGORA COM ESPAÇO) */}
         <div className="mb-6 flex flex-wrap gap-2">
           {indicators.map(ind => (
             <button
@@ -140,7 +147,7 @@ export const Dashboard = () => {
               className={`px-3 py-2 rounded ${
                 selectedIndicators.includes(ind.id)
                   ? "bg-blue-600 text-white"
-                  : "bg-gray-200 dark:bg-gray-700"
+                  : "bg-gray-200 dark:bg-gray-700 dark:text-white"
               }`}
             >
               {ind.name}
@@ -148,6 +155,7 @@ export const Dashboard = () => {
           ))}
         </div>
 
+        {/* CHARTS */}
         {selectedIndicators.map(id => {
           const data = dataPoints[id] || [];
           const indicator = indicators.find(i => i.id === id);

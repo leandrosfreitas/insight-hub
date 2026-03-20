@@ -1,8 +1,8 @@
 interface DateFilterProps {
-  startDate: string;
-  endDate: string;
-  setStartDate: (date: string) => void;
-  setEndDate: (date: string) => void;
+  startDate: string
+  endDate: string
+  setStartDate: (date: string) => void
+  setEndDate: (date: string) => void
 }
 
 export default function DateFilter({
@@ -11,16 +11,17 @@ export default function DateFilter({
   setStartDate,
   setEndDate
 }: DateFilterProps) {
-  return (
-    <div className="flex gap-4 flex-wrap">
 
-      <input
+  return (
+    <div className="flex flex-wrap gap-4">
+
+      <input 
         type="date"
         value={startDate}
         onChange={(e) => setStartDate(e.target.value)}
         className="
           border rounded px-3 py-2
-          bg-white text-gray-900
+          bg-white text-gray-800
           dark:bg-gray-800 dark:text-white dark:border-gray-600
         "
       />
@@ -31,7 +32,7 @@ export default function DateFilter({
         onChange={(e) => setEndDate(e.target.value)}
         className="
           border rounded px-3 py-2
-          bg-white text-gray-900
+          bg-white text-gray-800
           dark:bg-gray-800 dark:text-white dark:border-gray-600
         "
       />
