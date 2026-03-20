@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api, getMetrics } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useFilters } from "../context/FilterContext";
 
 import { Layout } from "../components/layout/Layout";
 import MetricCard from "../components/cards/MetricCard";
@@ -28,16 +29,23 @@ interface Metrics {
 }
 
 export const Dashboard = () => {
+
   const { role } = useAuth();
   const navigate = useNavigate();
 
+  // ✅ CONTEXTO GLOBAL (FILTROS)
+  const {
+    selectedIndicators,
+    setSelectedIndicators,
+    startDate,
+    setStartDate,
+    endDate,
+    setEndDate
+  } = useFilters();
+
   const [indicators, setIndicators] = useState<Indicator[]>([]);
-  const [selectedIndicators, setSelectedIndicators] = useState<number[]>([]);
   const [dataPoints, setDataPoints] = useState<Record<number, DataPoint[]>>({});
   const [metrics, setMetrics] = useState<Metrics | null>(null);
-
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
 
   // =============================
   // LOAD METRICS
@@ -61,14 +69,16 @@ export const Dashboard = () => {
   // LOAD DATAPOINTS (MULTI)
   // =============================
   useEffect(() => {
+
     if (selectedIndicators.length === 0) return;
 
     selectedIndicators.forEach(id => {
+
       api.get(`/indicators/${id}/datapoints`)
         .then(res => {
 
           let formatted: DataPoint[] = res.data.map((d: DataPoint) => ({
-            date: new Date(d.date).toISOString(), // mantém padrão consistente
+            date: new Date(d.date).toISOString(),
             value: d.value
           }));
 
@@ -83,7 +93,7 @@ export const Dashboard = () => {
             });
           }
 
-          // formatação final para exibição
+          // formatação final
           formatted = formatted.map((d: DataPoint) => ({
             ...d,
             date: new Date(d.date).toLocaleDateString()
@@ -96,18 +106,19 @@ export const Dashboard = () => {
 
         })
         .catch(err => console.error(err));
+
     });
 
   }, [selectedIndicators, startDate, endDate]);
 
   // =============================
-  // HANDLE SELECT MULTI
+  // SELECT MULTI
   // =============================
   const handleSelectIndicator = (id: number) => {
-    setSelectedIndicators(prev =>
-      prev.includes(id)
-        ? prev.filter(i => i !== id)
-        : [...prev, id]
+    setSelectedIndicators(
+      selectedIndicators.includes(id)
+        ? selectedIndicators.filter(i => i !== id)
+        : [...selectedIndicators, id]
     );
   };
 
@@ -127,7 +138,7 @@ export const Dashboard = () => {
 
         </div>
 
-        {/* ADMIN BUTTON */}
+        {/* ADMIN */}
         {role === "admin" && (
           <div className="mb-6">
             <button
@@ -149,7 +160,7 @@ export const Dashboard = () => {
           />
         </div>
 
-        {/* METRIC CARDS */}
+        {/* METRICS */}
         {metrics && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
             <MetricCard title="Receita Total" value={`R$ ${metrics.revenue}`} />
@@ -169,6 +180,7 @@ export const Dashboard = () => {
           <div className="flex flex-wrap gap-2">
 
             {indicators.map(ind => (
+
               <button
                 key={ind.id}
                 onClick={() => handleSelectIndicator(ind.id)}
@@ -180,6 +192,7 @@ export const Dashboard = () => {
               >
                 {ind.name}
               </button>
+
             ))}
 
           </div>

@@ -7,58 +7,61 @@ import { Comparison } from "./pages/Comparison";
 import IndicatorsAdmin from "./pages/admin/Indicators";
 
 import { AuthProvider } from "./context/AuthContext";
+import { FilterProvider } from "./context/FilterContext";
 import { PrivateRoute } from "./routes/PrivateRoute";
 
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <FilterProvider>
 
-        <Routes>
+        <BrowserRouter>
+          <Routes>
 
-          <Route path="/" element={<Login />} />
+            <Route path="/" element={<Login />} />
 
-          <Route
-            path="/Dashboard"
-            element={
-              <PrivateRoute>
-                <Dashboard />
-              </PrivateRoute>
-            }
-          />
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>
+              }
+            />
 
-          <Route
-            path="/admin/indicators"
-            element={
-              <PrivateRoute>
-                <IndicatorsAdmin />
-              </PrivateRoute>
-            }
-          />
+            <Route
+              path="/indicators"
+              element={
+                <PrivateRoute>
+                  <Indicators />
+                </PrivateRoute>
+              }
+            />
 
-          <Route
-            path="/indicators"
-            element={
-              <PrivateRoute>
-                <Indicators />
-              </PrivateRoute>
-            }
-          />
+            <Route
+              path="/comparison"
+              element={
+                <PrivateRoute>
+                  <Comparison />
+                </PrivateRoute>
+              }
+            />
 
-          <Route
-            path="/comparison"
-            element={
-              <PrivateRoute>
-                <Comparison />
-              </PrivateRoute>
-            }
-          />
+            <Route
+              path="/admin/indicators"
+              element={
+                <PrivateRoute>
+                  <IndicatorsAdmin />
+                </PrivateRoute>
+              }
+            />
 
-        </Routes>
-        
-      </BrowserRouter>
+          </Routes>
+        </BrowserRouter>
+
+      </FilterProvider>
     </AuthProvider>
-  )
+  );
 }
 
 export default App;
