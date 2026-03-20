@@ -8,7 +8,6 @@ import MetricCard from "../components/cards/MetricCard";
 import DateFilter from "../components/filters/DateFilter";
 import ThemeToggle from "../components/ui/ThemeToggle";
 
-import IndicatorComparison from "../components/charts/IndicatorComparison";
 import IndicatorChart from "../components/charts/IndicatorChart";
 
 interface Indicator {
@@ -44,7 +43,9 @@ export const Dashboard = () => {
   // LOAD METRICS
   // =============================
   useEffect(() => {
-    getMetrics().then(data => setMetrics(data));
+    getMetrics()
+      .then(data => setMetrics(data))
+      .catch(err => console.error(err));
   }, []);
 
   // =============================
@@ -60,26 +61,33 @@ export const Dashboard = () => {
   // LOAD DATAPOINTS (MULTI)
   // =============================
   useEffect(() => {
-
     if (selectedIndicators.length === 0) return;
 
     selectedIndicators.forEach(id => {
-
       api.get(`/indicators/${id}/datapoints`)
         .then(res => {
 
-          let formatted = res.data.map((d: DataPoint) => ({
-            ...d,
-            date: new Date(d.date).toLocaleDateString()
+          let formatted: DataPoint[] = res.data.map((d: DataPoint) => ({
+            date: new Date(d.date).toISOString(), // mantém padrão consistente
+            value: d.value
           }));
 
           // filtro de período
           if (startDate && endDate) {
             formatted = formatted.filter((d: DataPoint) => {
               const current = new Date(d.date);
-              return current >= new Date(startDate) && current <= new Date(endDate);
+              return (
+                current >= new Date(startDate) &&
+                current <= new Date(endDate)
+              );
             });
           }
+
+          // formatação final para exibição
+          formatted = formatted.map((d: DataPoint) => ({
+            ...d,
+            date: new Date(d.date).toLocaleDateString()
+          }));
 
           setDataPoints(prev => ({
             ...prev,
@@ -88,7 +96,6 @@ export const Dashboard = () => {
 
         })
         .catch(err => console.error(err));
-
     });
 
   }, [selectedIndicators, startDate, endDate]);
@@ -103,23 +110,6 @@ export const Dashboard = () => {
         : [...prev, id]
     );
   };
-
-  // =============================
-  // COMPARAÇÃO (PRIMEIRO INDICADOR)
-  // =============================
-  const firstIndicatorData = selectedIndicators.length > 0
-    ? dataPoints[selectedIndicators[0]] || []
-    : [];
-
-  const currentValue =
-    firstIndicatorData.length > 0
-      ? firstIndicatorData[firstIndicatorData.length - 1].value
-      : 0;
-
-  const previousValue =
-    firstIndicatorData.length > 1
-      ? firstIndicatorData[firstIndicatorData.length - 2].value
-      : 0;
 
   return (
     <Layout>
@@ -166,17 +156,6 @@ export const Dashboard = () => {
             <MetricCard title="Pedidos" value={metrics.orders} />
             <MetricCard title="Ticket Médio" value={`R$ ${metrics.avg_ticket}`} />
             <MetricCard title="Produto Top" value={metrics.top_product} />
-          </div>
-        )}
-
-        {/* COMPARAÇÃO */}
-        {firstIndicatorData.length > 1 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
-            <IndicatorComparison
-              title="Variação do Indicador"
-              current={currentValue}
-              previous={previousValue}
-            />
           </div>
         )}
 
