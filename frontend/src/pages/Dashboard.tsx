@@ -47,6 +47,10 @@ export const Dashboard = () => {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
 
   useEffect(() => {
+    document.title = "Dashboard | InsightHub";
+  }, []);
+
+  useEffect(() => {
     getMetrics().then(setMetrics);
   }, []);
 

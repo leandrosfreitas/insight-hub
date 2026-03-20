@@ -7,6 +7,10 @@ export default function Indicators() {
     const [indicators, setIndicators] = useState([])
 
     useEffect(() => {
+        document.title = "Indicadores | InsightHub";
+    }, []);
+
+    useEffect(() => {
         api.get("/indicators").then(res => setIndicators(res.data))
     }, [])
 

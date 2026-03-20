@@ -1,5 +1,6 @@
 import { useAuth } from "../../context/AuthContext";
 import { Link } from "react-router-dom";
+import Logo from "../ui/Logo";
 
 export const Sidebar = ({ isOpen, setIsOpen }: any) => {
 
@@ -19,8 +20,8 @@ export const Sidebar = ({ isOpen, setIsOpen }: any) => {
     >
 
       {/* HEADER */}
-      <div className="p-6 text-xl font-semibold flex justify-between items-center text-gray-800 dark:text-white">
-        InsightHub
+      <div className="p-6 flex justify-between items-center">
+        <Logo />
         <button onClick={() => setIsOpen(false)} className="md:hidden">✕</button>
       </div>
 

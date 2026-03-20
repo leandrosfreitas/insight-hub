@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
+
+import Logo from "../components/ui/Logo";
 
 export const Login = () => {
 
@@ -12,6 +14,10 @@ export const Login = () => {
     const [name, setName] = useState("")
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+
+    useEffect(() => {
+        document.title = "Login | InsightHub";
+    }, []);
 
     const handleSubmit = async (e: any) => {
         e.preventDefault();
@@ -45,8 +51,8 @@ export const Login = () => {
 
             <div className="bg-white dark:bg-gray-800 p-10 rounded-xl shadow-md w-full max-w-md">
 
-                <h1 className="text-3xl font-bold text-center mb-6 text-gray-900 dark:text-white">
-                    InsightHub
+                <h1 className="flex justify-center mb-6">
+                    <Logo />
                 </h1>
 
                 <h2 className="text-xl text-center mb-6 text-gray-700 dark:text-gray-300">

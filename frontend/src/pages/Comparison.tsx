@@ -30,6 +30,10 @@ export const Comparison = () => {
   const [dataPoints, setDataPoints] = useState<Record<number, DataPoint[]>>({});
 
   useEffect(() => {
+    document.title = "Comparação | InsightHub";
+  }, []);
+
+  useEffect(() => {
     api.get("/indicators").then(res => setIndicators(res.data));
   }, []);
 
