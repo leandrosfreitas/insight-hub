@@ -1,17 +1,23 @@
-import { type ReactNode } from "react"
+import { useState } from "react"
 import { Sidebar } from "./Sidebar"
 
-interface Props {
-  children: ReactNode
-}
+export const Layout = ({ children }: any) => {
 
-export const Layout = ({ children }: Props) => {
+  const [isOpen, setIsOpen] = useState(true)
+
   return (
-    <div className="flex h-screen bg-gray-50">
-      
-      <Sidebar />
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
 
-      <main className="flex-1 p-10 overflow-auto">
+      <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} />
+
+      <main className="flex-1 p-4 md:p-10 overflow-auto">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="mb-4 md:hidden bg-gray-800 text-white px-3 py-2 rounded"
+        >
+          ☰
+        </button>
+
         {children}
       </main>
 

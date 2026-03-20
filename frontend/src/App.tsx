@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Login } from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
+import Indicators from "./pages/Indicators";
+
 import IndicatorsAdmin from "./pages/admin/Indicators";
 
 import { AuthProvider } from "./context/AuthContext";
@@ -29,6 +31,15 @@ function App() {
             element={
               <PrivateRoute>
                 <IndicatorsAdmin />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/indicators"
+            element={
+              <PrivateRoute>
+                <Indicators />
               </PrivateRoute>
             }
           />

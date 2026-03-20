@@ -10,88 +10,126 @@ import ThemeToggle from "../components/ui/ThemeToggle";
 
 import IndicatorComparison from "../components/charts/IndicatorComparison";
 import IndicatorChart from "../components/charts/IndicatorChart";
-import IndicatorAreaChart from "../components/charts/IndicatorAreaChart";
 
 interface Indicator {
-  id: number
-  name: string
+  id: number;
+  name: string;
 }
 
 interface DataPoint {
-  date: string
-  value: number
+  date: string;
+  value: number;
 }
 
 interface Metrics {
-  revenue: number
-  orders: number
-  avg_ticket: number
-  top_product: string
+  revenue: number;
+  orders: number;
+  avg_ticket: number;
+  top_product: string;
 }
 
 export const Dashboard = () => {
   const { role } = useAuth();
-  console.log("Role atual:", role);
   const navigate = useNavigate();
 
-  const [indicators, setIndicators] = useState<Indicator[]>([])
-  const [selectedIndicator, setSelectedIndicator] = useState<number | null>(null)
-  const [dataPoints, setDataPoints] = useState<DataPoint[]>([])
-  const [metrics, setMetrics] = useState<Metrics | null>(null)
+  const [indicators, setIndicators] = useState<Indicator[]>([]);
+  const [selectedIndicators, setSelectedIndicators] = useState<number[]>([]);
+  const [dataPoints, setDataPoints] = useState<Record<number, DataPoint[]>>({});
+  const [metrics, setMetrics] = useState<Metrics | null>(null);
 
-  const [startDate, setStartDate] = useState("")
-  const [endDate, setEndDate] = useState("")
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
+  // =============================
+  // LOAD METRICS
+  // =============================
   useEffect(() => {
-    getMetrics().then(data => setMetrics(data))
-  }, [])
+    getMetrics().then(data => setMetrics(data));
+  }, []);
 
+  // =============================
+  // LOAD INDICATORS
+  // =============================
   useEffect(() => {
     api.get("/indicators")
       .then(res => setIndicators(res.data))
-  }, [])
+      .catch(err => console.error(err));
+  }, []);
 
+  // =============================
+  // LOAD DATAPOINTS (MULTI)
+  // =============================
   useEffect(() => {
 
-    if(selectedIndicator){
+    if (selectedIndicators.length === 0) return;
 
-      api.get(`/indicators/${selectedIndicator}/datapoints`)
+    selectedIndicators.forEach(id => {
+
+      api.get(`/indicators/${id}/datapoints`)
         .then(res => {
 
-          const formatted = res.data.map((d: DataPoint) => ({
+          let formatted = res.data.map((d: DataPoint) => ({
             ...d,
             date: new Date(d.date).toLocaleDateString()
-          }))
+          }));
 
-          setDataPoints(formatted)
+          // filtro de período
+          if (startDate && endDate) {
+            formatted = formatted.filter((d: DataPoint) => {
+              const current = new Date(d.date);
+              return current >= new Date(startDate) && current <= new Date(endDate);
+            });
+          }
+
+          setDataPoints(prev => ({
+            ...prev,
+            [id]: formatted
+          }));
 
         })
+        .catch(err => console.error(err));
 
-    }
+    });
 
-  }, [selectedIndicator])
+  }, [selectedIndicators, startDate, endDate]);
+
+  // =============================
+  // HANDLE SELECT MULTI
+  // =============================
+  const handleSelectIndicator = (id: number) => {
+    setSelectedIndicators(prev =>
+      prev.includes(id)
+        ? prev.filter(i => i !== id)
+        : [...prev, id]
+    );
+  };
+
+  // =============================
+  // COMPARAÇÃO (PRIMEIRO INDICADOR)
+  // =============================
+  const firstIndicatorData = selectedIndicators.length > 0
+    ? dataPoints[selectedIndicators[0]] || []
+    : [];
 
   const currentValue =
-    dataPoints.length > 0
-      ? dataPoints[dataPoints.length - 1].value
-      : 0
+    firstIndicatorData.length > 0
+      ? firstIndicatorData[firstIndicatorData.length - 1].value
+      : 0;
 
   const previousValue =
-    dataPoints.length > 1
-      ? dataPoints[dataPoints.length - 2].value
-      : 0
+    firstIndicatorData.length > 1
+      ? firstIndicatorData[firstIndicatorData.length - 2].value
+      : 0;
 
   return (
-
     <Layout>
 
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto px-4">
 
         {/* HEADER */}
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
 
-        <div className="flex justify-between items-center mb-6">
-
-          <h1 className="text-2xl font-semibold">
+          <h1 className="text-2xl font-semibold dark:text-white">
             Dashboard
           </h1>
 
@@ -99,8 +137,7 @@ export const Dashboard = () => {
 
         </div>
 
-        {/* BOTÃO ADMIN */}
-
+        {/* ADMIN BUTTON */}
         {role === "admin" && (
           <div className="mb-6">
             <button
@@ -113,124 +150,88 @@ export const Dashboard = () => {
         )}
 
         {/* DATE FILTER */}
-
         <div className="mb-6">
-
           <DateFilter
             startDate={startDate}
             endDate={endDate}
             setStartDate={setStartDate}
             setEndDate={setEndDate}
           />
-
         </div>
 
-
         {/* METRIC CARDS */}
-
         {metrics && (
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-
-            <MetricCard
-              title="Receita Total"
-              value={`R$ ${metrics.revenue}`}
-            />
-
-            <MetricCard
-              title="Pedidos"
-              value={metrics.orders}
-            />
-
-            <MetricCard
-              title="Ticket Médio"
-              value={`R$ ${metrics.avg_ticket}`}
-            />
-
-            <MetricCard
-              title="Produto Top"
-              value={metrics.top_product}
-            />
-
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+            <MetricCard title="Receita Total" value={`R$ ${metrics.revenue}`} />
+            <MetricCard title="Pedidos" value={metrics.orders} />
+            <MetricCard title="Ticket Médio" value={`R$ ${metrics.avg_ticket}`} />
+            <MetricCard title="Produto Top" value={metrics.top_product} />
           </div>
-
         )}
 
-        {/* INDICADOR COMPARAÇÃO */}
-
-        {dataPoints.length > 1 && (
-          
+        {/* COMPARAÇÃO */}
+        {firstIndicatorData.length > 1 && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
-            
             <IndicatorComparison
               title="Variação do Indicador"
               current={currentValue}
               previous={previousValue}
             />
-
           </div>
-          
         )}
 
-        {/* INDICATOR SELECT */}
-
+        {/* SELECT MULTI */}
         <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-sm border mb-8">
 
-          <label className="block text-sm mb-2">
-            Escolha um indicador
+          <label className="block text-sm mb-3 dark:text-gray-300">
+            Escolha um ou mais indicadores
           </label>
 
-          <select
-            className="border rounded px-3 py-2 w-64 dark:bg-gray-800"
-            onChange={(e)=> {
-              const value = e.target.value
-              if (value) setSelectedIndicator(Number(value))
-            }}
-          >
-
-            <option value="">
-              Selecionar
-            </option>
+          <div className="flex flex-wrap gap-2">
 
             {indicators.map(ind => (
-
-              <option key={ind.id} value={ind.id}>
+              <button
+                key={ind.id}
+                onClick={() => handleSelectIndicator(ind.id)}
+                className={`px-3 py-2 rounded-lg text-sm border transition ${
+                  selectedIndicators.includes(ind.id)
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 dark:bg-gray-800 dark:text-white"
+                }`}
+              >
                 {ind.name}
-              </option>
-
+              </button>
             ))}
 
-          </select>
+          </div>
 
         </div>
 
+        {/* CHARTS */}
+        {selectedIndicators.length > 0 && (
 
-        {/* CHART */}
+          <div className="grid grid-cols-1 gap-6">
 
-        {dataPoints.length > 0 && (
+            {selectedIndicators.map(id => {
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
-            {/* LINE CHART */}
-            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-sm border">
-              <h2 className="mb-4 font-medium">
-                Evolução do indicador
-              </h2>
+              const indicator = indicators.find(i => i.id === id);
+              const data = dataPoints[id] || [];
 
-              <IndicatorChart data={dataPoints} />
+              return (
+                <div
+                  key={id}
+                  className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-sm border"
+                >
+                  <h2 className="mb-4 font-medium dark:text-white">
+                    {indicator?.name}
+                  </h2>
 
-            </div>
+                  <IndicatorChart data={data} />
 
-            {/* AREA CHART */}
-            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-sm border">
-              
-              <h2 className="mb-4 font-medium">
-                Área do indicador
-              </h2>
+                </div>
+              );
 
-              <IndicatorAreaChart data={dataPoints} />
-
-            </div>
+            })}
 
           </div>
 
@@ -239,6 +240,5 @@ export const Dashboard = () => {
       </div>
 
     </Layout>
-
-  )
-}
+  );
+};
