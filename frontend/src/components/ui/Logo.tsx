@@ -1,4 +1,4 @@
-import logo from "../../assets/logo.svg";
+import logo from "../../logo.svg";
 export default function Logo() {
   return (
     <div className="flex items-center gap-2">
